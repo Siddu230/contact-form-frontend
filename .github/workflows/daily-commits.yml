@@ -1,0 +1,25 @@
+name: Daily Auto Commits
+on:
+  schedule:
+    # Runs every 4 hours (6 times daily: 0:00, 4:00, 8:00, 12:00, 16:00, 20:00 UTC)
+    - cron: '0 */4 * * *'
+  # Optional: Allow manual triggering for testing
+  workflow_dispatch:
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for committing changes
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Make changes to file
+        run: |
+          # Append timestamp to a file
+          echo "$(date -u '+%Y-%m-%d %H:%M:%S UTC') - Auto commit" >> auto_commit_log.txt
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Auto commit at ${{ github.event.schedule || 'manual trigger' }} $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          file_pattern: auto_commit_log.txt
+          commit_author: "GitHub Actions <actions@github.com>"
